@@ -4,6 +4,7 @@ var {User} = require('./models/user');
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongodb = require('mongodb');
+const port = process.env.PORT || 3000; // the or ops allow default
 
 /*Create a app*/
 var app = express();
@@ -47,8 +48,8 @@ app.get('/todos/:id', (req, res)=>{
   });
 })
 
-app.listen(3000, ()=> {
-  console.log('listen Ports');
+app.listen(port, ()=> {
+  console.log(`listen ${port}`);
 });
 
 module.exports ={app};
