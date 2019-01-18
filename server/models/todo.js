@@ -17,6 +17,14 @@ var Todo = mongoose.model('Todo', {
   completedAt:{
     type: Number,
     default: null
+  },
+  recordAt:{
+    type: Number,
+    default: null
+  },
+  userID:{
+    type: mongoose.Schema.Types.ObjectId, // the user id is a special type
+    required: true
   }
 });
 

@@ -112,7 +112,18 @@ UserSchema.methods.addAuthToken = function() {
   // user.tokens = user.tokens.concat([{access, token}]); // add it in mongodb
   return user.save().then(() => {
     return token;
-  })
+  });
+};
+
+UserSchema.methods.removeToken = function(token){
+  var user = this;
+  return user.update({ // mongoDB operate
+          $pull:{
+            tokens:{
+              token:token
+            }
+          }
+        });
 };
 
 

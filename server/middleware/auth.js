@@ -9,7 +9,7 @@ var authenticate = (req, res, next) =>{
       console.log('no user');
       return Promise.reject(); // jump to catch chain clause.
     }
-    req.user = user;
+    req.user = user; // predefine the user here
     req.token = token;
     next();
   }).catch((e)=>{

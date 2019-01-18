@@ -15,9 +15,11 @@ var app = express();
 app.use(bodyParser.json());
 
 /*Create post router for this app*/
-app.post('/todos', (req, res) =>{
+app.post('/todos', authenticate, (req, res) =>{
   var todo = new Todo({
-    text: req.body.text
+    text: req.body.text,
+    userID: req.user._id,
+    recordAt: new Date().getTime()
   });
 
   todo.save().then((doc)=>{
@@ -28,9 +30,11 @@ app.post('/todos', (req, res) =>{
 
 });
 
-app.get('/todos', (req, res) =>{
-  // return everything
-  Todo.find().then((todos) =>{
+app.get('/todos', authenticate, (req, res) =>{
+  // return everything the user create
+  Todo.find({
+    userID: req.user._id
+  }).then((todos) =>{
     res.send({todos});
     // console.log(todos);
   }, (e) =>{
@@ -39,12 +43,15 @@ app.get('/todos', (req, res) =>{
 });
 
 // router for find individual todo with URL pattern!
-app.get('/todos/:id', (req, res)=>{
+app.get('/todos/:id', authenticate, (req, res)=>{
   var id = req.params.id; // get the id in the pattern
   if (!mongodb.ObjectID.isValid(id)) {
     return res.status(404).send();
   }
-  Todo.findById(id).then((todo) =>{
+  Todo.findOne({
+    _id: id,
+    userID: req.user._id
+  }).then((todo) =>{
     res.send(todo);
   }).catch((e) =>{
     res.status(400).send();
@@ -52,12 +59,15 @@ app.get('/todos/:id', (req, res)=>{
 });
 
 // router for delete todo
-app.delete('/todos/:id', (req, res)=>{
+app.delete('/todos/:id', authenticate, (req, res)=>{
   var id = req.params.id; // get the id in the pattern
   if (!mongodb.ObjectID.isValid(id)) {
     return res.status(404).send();
   }
-  Todo.findByIdAndRemove(id).then((todoRemoved) =>{
+  Todo.findOneAndRemove({
+    _id: id,
+    userID: req.user._id
+  }).then((todoRemoved) =>{
     if (!todoRemoved){
       return res.status(404).send();
     }
@@ -69,9 +79,10 @@ app.delete('/todos/:id', (req, res)=>{
 });
 
 // router for update todos
-app.patch('/todos/:id', (req, res)=>{
+app.patch('/todos/:id', authenticate, (req, res)=>{
   var id = req.params.id; // get the id in the pattern
   var body = _.pick(req.body, ['text', 'completed']);
+
 
   if (!mongodb.ObjectID.isValid(id)) {
     return res.status(404).send();
@@ -83,8 +94,8 @@ app.patch('/todos/:id', (req, res)=>{
     body.completed = false;
     body.completedAt =  null;
   }
-
-  Todo.findByIdAndUpdate(id, {$set:body}, {new: true})
+  console.log(body);
+  Todo.findOneAndUpdate({_id: id, userID: req.user._id}, {$set:body}, {new: true})
   .then((todo)=>{
     if (!todo){
       return res.status(404).send()
@@ -131,7 +142,7 @@ app.post('/users/login', (req, res) =>{
 
 // delete token for logined user
 
-app.delete('/users/me/token', authenticate, (req, res) =>{
+app.delete('/users/me/logout', authenticate, (req, res) =>{
   req.user.removeToken(req.token).then(()=>{
     res.status(200).send();
   }, () =>{
