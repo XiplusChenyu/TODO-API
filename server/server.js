@@ -94,7 +94,7 @@ app.patch('/todos/:id', authenticate, (req, res)=>{
     body.completed = false;
     body.completedAt =  null;
   }
-  console.log(body);
+
   Todo.findOneAndUpdate({_id: id, userID: req.user._id}, {$set:body}, {new: true})
   .then((todo)=>{
     if (!todo){
@@ -114,9 +114,9 @@ app.post('/users', (req, res)=>{
   var user = new User(body); // just pass the object we created
 
   user.save().then((user)=>{
-    return user.addAuthToken(); // ! call generate token and update mongoDB!!!
+    return user.addAuthToken(); // call generate token and update mongoDB!!!
   }).then((token) => {
-    res.header('x-auth', token).send(user); //? add a customer x- new header in response body which gives the token
+    res.header('x-auth', token).send(user); //t add a customer x- new header in response body which gives the token
   }).catch((e)=>{res.status(400).send(e)});
 
 });
